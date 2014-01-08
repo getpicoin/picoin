@@ -830,72 +830,100 @@ uint256 static GetOrphanRoot(const CBlock* pblock)
     return pblock->GetHash();
 }
 
-
-int static generateMTRandom(unsigned int s, int range)
-{
-	random::mt19937 gen(s);
-    random::uniform_int_distribution<> dist(1, range);
-    return dist(gen);
-}
-
-
 int64 static GetBlockValue(int nHeight, int64 nFees, uint256 prevHash)
 {
-        int64 nSubsidy = 10000 * COIN;
+
+    const string pi = 
+            "14159265358979323846264338327950288419716939937510"
+            "58209749445923078164062862089986280348253421170679"
+            "82148086513282306647093844609550582231725359408128"
+            "48111745028410270193852110555964462294895493038196"
+            "44288109756659334461284756482337867831652712019091"
+            "45648566923460348610454326648213393607260249141273"
+            "72458700660631558817488152092096282925409171536436"
+            "78925903600113305305488204665213841469519415116094"
+            "33057270365759591953092186117381932611793105118548"
+            "07446237996274956735188575272489122793818301194912"
+            "98336733624406566430860213949463952247371907021798"
+            "60943702770539217176293176752384674818467669405132"
+            "00056812714526356082778577134275778960917363717872"
+            "14684409012249534301465495853710507922796892589235"
+            "42019956112129021960864034418159813629774771309960"
+            "51870721134999999837297804995105973173281609631859"
+            "50244594553469083026425223082533446850352619311881"
+            "71010003137838752886587533208381420617177669147303"
+            "59825349042875546873115956286388235378759375195778"
+            "18577805321712268066130019278766111959092164201989"
+            "38095257201065485863278865936153381827968230301952"
+            "03530185296899577362259941389124972177528347913151"
+            "55748572424541506959508295331168617278558890750983"
+            "81754637464939319255060400927701671139009848824012"
+            "85836160356370766010471018194295559619894676783744"
+            "94482553797747268471040475346462080466842590694912"
+            "93313677028989152104752162056966024058038150193511"
+            "25338243003558764024749647326391419927260426992279"
+            "67823547816360093417216412199245863150302861829745"
+            "55706749838505494588586926995690927210797509302955"
+            "32116534498720275596023648066549911988183479775356"
+            "63698074265425278625518184175746728909777727938000"
+            "81647060016145249192173217214772350141441973568548"
+            "16136115735255213347574184946843852332390739414333"
+            "45477624168625189835694855620992192221842725502542"
+            "56887671790494601653466804988627232791786085784383"
+            "82796797668145410095388378636095068006422512520511"
+            "73929848960841284886269456042419652850222106611863"
+            "06744278622039194945047123713786960956364371917287"
+            "46776465757396241389086583264599581339047802759009"
+            "94657640789512694683983525957098258226205224894077"
+            "26719478268482601476990902640136394437455305068203"
+            "49625245174939965143142980919065925093722169646151"
+            "57098583874105978859597729754989301617539284681382"
+            "68683868942774155991855925245953959431049972524680"
+            "84598727364469584865383673622262609912460805124388"
+            "43904512441365497627807977156914359977001296160894"
+            "41694868555848406353422072225828488648158456028506"
+            "01684273945226746767889525213852254995466672782398"
+            "64565961163548862305774564980355936345681743241125"
+            "15076069479451096596094025228879710893145669136867"
+            "22874894056010150330861792868092087476091782493858"
+            "90097149096759852613655497818931297848216829989487"
+            "22658804857564014270477555132379641451523746234364"
+            "54285844479526586782105114135473573952311342716610"
+            "21359695362314429524849371871101457654035902799344"
+            "03742007310578539062198387447808478489683321445713"
+            "86875194350643021845319104848100537061468067491927"
+            "81911979399520614196634287544406437451237181921799"
+            "98391015919561814675142691239748940907186494231961"
+            "56794520809514655022523160388193014209376213785595"
+            "66389377870830390697920773467221825625996615014215"
+            "03068038447734";
+
+        int64 nSubsidy = 314 * COIN;
          
-        std::string cseed_str = prevHash.ToString().substr(7,7);
-        const char* cseed = cseed_str.c_str();
-        long seed = hex2long(cseed);
-        int rand = generateMTRandom(seed, 999999);
-        int rand1 = 0;
-        int rand2 = 0;
-        int rand3 = 0;
-        int rand4 = 0;
-        int rand5 = 0;
+        // Subsidy is cut in half every 314159 blocks, which will occur approximately every 212 days
+        nSubsidy >>= (nHeight / 314159); // subsidy halves 
        
-        if(nHeight < 100000)    
+        if(nHeight == 1)    
         {
-                nSubsidy = (1 + rand) * COIN;
+                nSubsidy = (4712388) * COIN; // premine
         }
-        else if(nHeight < 200000)      
+        else if(nHeight == 2)
         {
-                cseed_str = prevHash.ToString().substr(7,7);
-                cseed = cseed_str.c_str();
-                seed = hex2long(cseed);
-                rand1 = generateMTRandom(seed, 499999);
-                nSubsidy = (1 + rand1) * COIN;
+                nSubsidy = 24800000 * COIN; // every year on Pi Day (Marth 14th) starting with 00:00 GMT.
+                                            // every hour on the hour, a total of 24 random blocks will
+                                            // receive a bonus of 31415 PIs
         }
-        else if(nHeight < 300000)      
+        else if(nHeight < 314)      
         {
-                cseed_str = prevHash.ToString().substr(6,7);
-                cseed = cseed_str.c_str();
-                seed = hex2long(cseed);
-                rand2 = generateMTRandom(seed, 249999);
-                nSubsidy = (1 + rand2) * COIN;
+                nSubsidy = 1 * COIN; // a reasonable runway for miners to join in the fun at launch
+                                     // without being afraid of insta-mine
         }
-        else if(nHeight < 400000)      
+        else if(nHeight < 3141)      
         {
-                cseed_str = prevHash.ToString().substr(7,7);
-                cseed = cseed_str.c_str();
-                seed = hex2long(cseed);
-                rand3 = generateMTRandom(seed, 124999);
-                nSubsidy = (1 + rand3) * COIN;
-        }
-        else if(nHeight < 500000)      
-        {
-                cseed_str = prevHash.ToString().substr(7,7);
-                cseed = cseed_str.c_str();
-                seed = hex2long(cseed);
-                rand4 = generateMTRandom(seed, 62499);
-                nSubsidy = (1 + rand4) * COIN;
-        }
-        else if(nHeight < 600000)      
-        {
-                cseed_str = prevHash.ToString().substr(6,7);
-                cseed = cseed_str.c_str();
-                seed = hex2long(cseed);
-                rand5 = generateMTRandom(seed, 31249);
-                nSubsidy = (1 + rand5) * COIN;
+                int curBlockSubsidy =  int(pi[nHeight-1] - '0');
+                nSubsidy = curBlockSubsidy * 3141 * COIN; // random blocks awarding from 0 to 28269 PIs
+                                                          // the pi digit corresponding to the current block number
+                                                          // acts as a multiplier to the base reward of 3141 PIs
         }
  
     return nSubsidy + nFees;
@@ -903,8 +931,8 @@ int64 static GetBlockValue(int nHeight, int64 nFees, uint256 prevHash)
 
 
 
-static const int64 nTargetTimespan = 4 * 60 * 60; // PiCoin: every 4 hours
-static const int64 nTargetSpacing = 60; // PiCoin: 1 minutes
+static const int64 nTargetTimespan = 314 * 3 * 1 * 4 * 1 * 5; // PiCoin: retarget every 314 blocks (5.2 hours)
+static const int64 nTargetSpacing = 3 * 1 * 4 * 1 *5; // PiCoin: 60 seconds
 static const int64 nInterval = nTargetTimespan / nTargetSpacing;
 
 //
@@ -2092,7 +2120,7 @@ bool LoadBlockIndex(bool fAllowNew)
 		//   vMerkleTree: 6f80efd038 
 
         // Genesis block
-        const char* pszTimestamp = "Nintondo";
+        const char* pszTimestamp = "TIME.com : Bound 2 Happen: Kanye West Demands Coinye Programmers Shut Down The Digital Currency";
         CTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
@@ -2104,14 +2132,14 @@ bool LoadBlockIndex(bool fAllowNew)
         block.hashPrevBlock = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1386325540;
+        block.nTime    = 1389208642;
         block.nBits    = 0x1e0ffff0;
         block.nNonce   = 99943;
 
 
         if (fTestNet)
         {
-            block.nTime    = 1386325540;
+            block.nTime    = 1389208642;
             block.nNonce   = 0;
         }
 
